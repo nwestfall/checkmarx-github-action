@@ -39,122 +39,127 @@ function getIssuesFromXml(xmlPath, repository, commitSha) {
     const GITHUB_FILE_URL = "https://github.com/" + repository + "/blob/" + commitSha + "/"
     let issues = []
     if (fs.existsSync(xmlPath)) {
-        let xmlData = fs.readFileSync(xmlPath)
-        let jsonObj = xmljs.xml2js(xmlData, { compact: false, spaces: 4 })
-        let root = jsonObj.elements
-        if (root && root.length > 0) {
-            let reportXml = root[0]
-            let attrs = reportXml.attributes
-            let queries = reportXml.elements
-            if (queries && queries.length > 0) {
-                for (let i = 0; i < queries.length; i++) {
-                    let query = queries[i]
-                    let queryAttrs = query.attributes
-                    let results = query.elements
-                    for (let j = 0; j < results.length; j++) {
-                        let result = results[j]
-                        let resultAttrs = result.attributes
-                        let issue = {
-                            initiatorName: attrs.InitiatorName,
-                            owner: attrs.Owner,
-                            scanId: attrs.ScanId,
-                            projectId: attrs.ProjectId,
-                            projectName: attrs.ProjectName,
-                            teamFullPath: attrs.TeamFullPathOnReportDate,
-                            scanDeepLink: attrs.DeepLink,
-                            scanStartDate: new Date(attrs.ScanStart),
-                            preset: attrs.Preset,
-                            scanTime: attrs.ScanTime,
-                            loc: attrs.LinesOfCodeScanned,
-                            filesScanned: attrs.FilesScanned,
-                            reportCreationDate: new Date(attrs.ReportCreationTime),
-                            teamShortPath: attrs.Team,
-                            cxVersion: attrs.CheckmarxVersion,
-                            scanComment: attrs.ScanComments,
-                            scanType: attrs.ScanType,
-                            sourceOrigin: attrs.SourceOrigin,
-                            visibility: attrs.Visibility,
-                            queryId: queryAttrs.id,
-                            queryCategories: queryAttrs.categories.length > 0 ? queryAttrs.categories.replace(/;/g, ",").split(",") : [],
-                            cweId: queryAttrs.cweId,
-                            queryName: queryAttrs.name,
-                            queryGroup: queryAttrs.group,
-                            querySeverity: queryAttrs.Severity,
-                            queryLanguage: queryAttrs.Language,
-                            queryLanguageHash: queryAttrs.LanguageHash,
-                            queryLanguageChangeDate: new Date(queryAttrs.LanguageChangeDate),
-                            querySeverityIndex: queryAttrs.SeverityIndex,
-                            queryPath: queryAttrs.QueryPath,
-                            queryVersionCode: queryAttrs.QueryVersionCode,
-                            resultNodeId: resultAttrs.NodeId,
-                            resultLine: parseInt(resultAttrs.Line),
-                            resultFileName: GITHUB_FILE_URL + resultAttrs.FileName + "#L" + (parseInt(resultAttrs.Line) - 1) + "-L" + (parseInt(resultAttrs.Line) + 1),
-                            resultStatus: resultAttrs.Status,
-                            resultColumn: parseInt(resultAttrs.Column),
-                            resultFalsePositive: resultAttrs.FalsePositive,
-                            resultSeverity: resultAttrs.Severity,
-                            resultAssignee: resultAttrs.AssignToUser,
-                            resultState: resultAttrs.state,
-                            resultRemark: resultAttrs.Remark.split("\r\n"),
-                            resultDeepLink: resultAttrs.DeepLink,
-                            resultSeverityIndex: resultAttrs.SeverityIndex
-                        }
-                        let paths = result.elements
-                        for (let k = 0; k < paths.length; k++) {
-                            let path = paths[k]
-                            let pathAttributes = path.attributes
-
-                            issue.resultId = pathAttributes.ResultId
-                            issue.pathId = pathAttributes.PathId
-                            issue.similarityId = pathAttributes.SimilarityId
-
-                            let pathNodes = path.elements
-                            issue.resultNodes = []
-
-                            for (let w = 0; w < pathNodes.length; w++) {
-                                let node = pathNodes[w]
-                                let resultNode = {}
-
-                                resultNode.line = parseInt(node.elements[1].elements[0].text)
-                                resultNode.relativefileName = node.elements[0].elements[0].text
-                                resultNode.fileName = GITHUB_FILE_URL + node.elements[0].elements[0].text + "#L" + (resultNode.line - 1) + "-L" + (resultNode.line + 1)
-                                resultNode.column = node.elements[2].elements[0].text
-                                resultNode.id = node.elements[3].elements[0].text
-                                resultNode.name = node.elements[4].elements[0].text
-                                //resultNode.type= node.elements[5] does not have elements
-                                resultNode.length = node.elements[6].elements[0].text
-                                resultNode.snippet = node.elements[7].elements[0].elements[1].elements[0].text.trim()
-
-                                issue.resultNodes.push(resultNode)
+        try {
+            let xmlData = fs.readFileSync(xmlPath)
+            let jsonObj = xmljs.xml2js(xmlData, { compact: false, spaces: 4 })
+            let root = jsonObj.elements
+            if (root && root.length > 0) {
+                let reportXml = root[0]
+                let attrs = reportXml.attributes
+                let queries = reportXml.elements
+                if (queries && queries.length > 0) {
+                    for (let i = 0; i < queries.length; i++) {
+                        let query = queries[i]
+                        let queryAttrs = query.attributes
+                        let results = query.elements
+                        for (let j = 0; j < results.length; j++) {
+                            let result = results[j]
+                            let resultAttrs = result.attributes
+                            let issue = {
+                                initiatorName: attrs.InitiatorName,
+                                owner: attrs.Owner,
+                                scanId: attrs.ScanId,
+                                projectId: attrs.ProjectId,
+                                projectName: attrs.ProjectName,
+                                teamFullPath: attrs.TeamFullPathOnReportDate,
+                                scanDeepLink: attrs.DeepLink,
+                                scanStartDate: new Date(attrs.ScanStart),
+                                preset: attrs.Preset,
+                                scanTime: attrs.ScanTime,
+                                loc: attrs.LinesOfCodeScanned,
+                                filesScanned: attrs.FilesScanned,
+                                reportCreationDate: new Date(attrs.ReportCreationTime),
+                                teamShortPath: attrs.Team,
+                                cxVersion: attrs.CheckmarxVersion,
+                                scanComment: attrs.ScanComments,
+                                scanType: attrs.ScanType,
+                                sourceOrigin: attrs.SourceOrigin,
+                                visibility: attrs.Visibility,
+                                queryId: queryAttrs.id,
+                                queryCategories: queryAttrs.categories.length > 0 ? queryAttrs.categories.replace(/;/g, ",").split(",") : [],
+                                cweId: queryAttrs.cweId,
+                                queryName: queryAttrs.name,
+                                queryGroup: queryAttrs.group,
+                                querySeverity: queryAttrs.Severity,
+                                queryLanguage: queryAttrs.Language,
+                                queryLanguageHash: queryAttrs.LanguageHash,
+                                queryLanguageChangeDate: new Date(queryAttrs.LanguageChangeDate),
+                                querySeverityIndex: queryAttrs.SeverityIndex,
+                                queryPath: queryAttrs.QueryPath,
+                                queryVersionCode: queryAttrs.QueryVersionCode,
+                                resultNodeId: resultAttrs.NodeId,
+                                resultLine: parseInt(resultAttrs.Line),
+                                resultFileName: GITHUB_FILE_URL + resultAttrs.FileName + "#L" + (parseInt(resultAttrs.Line) - 1) + "-L" + (parseInt(resultAttrs.Line) + 1),
+                                resultStatus: resultAttrs.Status,
+                                resultColumn: parseInt(resultAttrs.Column),
+                                resultFalsePositive: resultAttrs.FalsePositive,
+                                resultSeverity: resultAttrs.Severity,
+                                resultAssignee: resultAttrs.AssignToUser,
+                                resultState: resultAttrs.state,
+                                resultRemark: resultAttrs.Remark.split("\r\n"),
+                                resultDeepLink: resultAttrs.DeepLink,
+                                resultSeverityIndex: resultAttrs.SeverityIndex
                             }
+                            let paths = result.elements
+                            for (let k = 0; k < paths.length; k++) {
+                                let path = paths[k]
+                                let pathAttributes = path.attributes
 
-                            let startNode = pathNodes[0]
-                            let endNode = pathNodes[pathNodes.length - 1]
+                                issue.resultId = pathAttributes.ResultId
+                                issue.pathId = pathAttributes.PathId
+                                issue.similarityId = pathAttributes.SimilarityId
 
-                            issue.resultStartNodeLine = parseInt(startNode.elements[1].elements[0].text)
-                            issue.resultStartNodeRelativeFileName = startNode.elements[0].elements[0].text
-                            issue.resultStartNodeFileName = GITHUB_FILE_URL + startNode.elements[0].elements[0].text + "#L" + (issue.resultStartNodeLine - 1) + "-L" + (issue.resultStartNodeLine + 1)
-                            issue.resultStartNodeColumn = startNode.elements[2].elements[0].text
-                            issue.resultStartNodeId = startNode.elements[3].elements[0].text
-                            issue.resultStartNodeName = startNode.elements[4].elements[0].text
-                            //issue.resultStartNodeType= startNode.elements[5] does not have elements
-                            issue.resultStartNodeLength = startNode.elements[6].elements[0].text
-                            issue.resultStartNodeSnippet = startNode.elements[7].elements[0].elements[1].elements[0].text.trim()
+                                let pathNodes = path.elements
+                                issue.resultNodes = []
 
-                            issue.resultEndNodeLine = parseInt(endNode.elements[1].elements[0].text)
-                            issue.resultEndNodeRelativeFileName = endNode.elements[0].elements[0].text
-                            issue.resultEndNodeFileName = GITHUB_FILE_URL + endNode.elements[0].elements[0].text + "#L" + + (issue.resultEndNodeLine - 1) + "-L" + (issue.resultEndNodeLine + 1)
-                            issue.resultEndNodeColumn = endNode.elements[2].elements[0].text
-                            issue.resultEndNodeId = endNode.elements[3].elements[0].text
-                            issue.resultEndNodeName = endNode.elements[4].elements[0].text
-                            //issue.resultEndNodeType= endNode.elements[5] does not have elements
-                            issue.resultEndNodeLength = endNode.elements[6].elements[0].text
-                            issue.resultEndNodeSnippet = endNode.elements[7].elements[0].elements[1].elements[0].text.trim()
+                                for (let w = 0; w < pathNodes.length; w++) {
+                                    let node = pathNodes[w]
+                                    let resultNode = {}
+
+                                    resultNode.line = parseInt(node.elements[1].elements[0].text)
+                                    resultNode.relativefileName = node.elements[0].elements[0].text
+                                    resultNode.fileName = GITHUB_FILE_URL + node.elements[0].elements[0].text + "#L" + (resultNode.line - 1) + "-L" + (resultNode.line + 1)
+                                    resultNode.column = node.elements[2].elements[0].text
+                                    resultNode.id = node.elements[3].elements[0].text
+                                    resultNode.name = node.elements[4].elements[0].text
+                                    //resultNode.type= node.elements[5] does not have elements
+                                    resultNode.length = node.elements[6].elements[0].text
+                                    resultNode.snippet = node.elements[7].elements[0].elements[1].elements[0].text.trim()
+
+                                    issue.resultNodes.push(resultNode)
+                                }
+
+                                let startNode = pathNodes[0]
+                                let endNode = pathNodes[pathNodes.length - 1]
+
+                                issue.resultStartNodeLine = parseInt(startNode.elements[1].elements[0].text)
+                                issue.resultStartNodeRelativeFileName = startNode.elements[0].elements[0].text
+                                issue.resultStartNodeFileName = GITHUB_FILE_URL + startNode.elements[0].elements[0].text + "#L" + (issue.resultStartNodeLine - 1) + "-L" + (issue.resultStartNodeLine + 1)
+                                issue.resultStartNodeColumn = startNode.elements[2].elements[0].text
+                                issue.resultStartNodeId = startNode.elements[3].elements[0].text
+                                issue.resultStartNodeName = startNode.elements[4].elements[0].text
+                                //issue.resultStartNodeType= startNode.elements[5] does not have elements
+                                issue.resultStartNodeLength = startNode.elements[6].elements[0].text
+                                issue.resultStartNodeSnippet = startNode.elements[7].elements[0].elements[1].elements[0].text.trim()
+
+                                issue.resultEndNodeLine = parseInt(endNode.elements[1].elements[0].text)
+                                issue.resultEndNodeRelativeFileName = endNode.elements[0].elements[0].text
+                                issue.resultEndNodeFileName = GITHUB_FILE_URL + endNode.elements[0].elements[0].text + "#L" + + (issue.resultEndNodeLine - 1) + "-L" + (issue.resultEndNodeLine + 1)
+                                issue.resultEndNodeColumn = endNode.elements[2].elements[0].text
+                                issue.resultEndNodeId = endNode.elements[3].elements[0].text
+                                issue.resultEndNodeName = endNode.elements[4].elements[0].text
+                                //issue.resultEndNodeType= endNode.elements[5] does not have elements
+                                issue.resultEndNodeLength = endNode.elements[6].elements[0].text
+                                issue.resultEndNodeSnippet = endNode.elements[7].elements[0].elements[1].elements[0].text.trim()
+                            }
+                            issues.push(issue)
                         }
-                        issues.push(issue)
                     }
                 }
             }
+        } catch(e) {
+            console.error("Unable to parse reportXml");
+            console.error(e);
         }
     } else {
         core.info("reportXml does not exists in the path: " + xmlPath)

@@ -54,6 +54,7 @@ async function createIssues(cxAction) {
             if (cxAction == utils.SCAN) {
                 let xmlPath = sastreport.getXmlReportPath(workspace)
                 let issues = sastreport.getIssuesFromXml(xmlPath, repository, commitSha)
+                core.info(`${issues.length} issues from XML Report`)
                 let issuesChangedIds = []
                 let repositoryIssues = await getIssues(owner, repo, octokit)
                 if (issues) {
