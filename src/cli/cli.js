@@ -175,6 +175,7 @@ async function downloadCli(cxVersion, skipIfFail) {
                     if (utils.is8Version(cxVersion)) {
                         if (fs.existsSync(versionFileName)) {
                             if(isWin) {
+                                await exec.exec("powershell.exe Get-ChildItem")
                                 await exec.exec("powershell.exe Move-Item -Path " + versionFileName + " -Destination " + CLI_FOLDER_NAME)
                             } else {
                                 await exec.exec("mv " + versionFileName + " " + CLI_FOLDER_NAME)
